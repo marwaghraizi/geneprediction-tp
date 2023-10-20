@@ -134,7 +134,24 @@ def predict_genes(sequence: str, start_regex: Pattern, stop_regex: Pattern, shin
     :param min_gap: (int) Minimum distance between two genes.
     :return: (list) List of [start, stop] position of each predicted genes.
     """
-    pass
+    current_position = 0
+    identified_genes = []
+    while len(sequence) - current_position >= min_gap:
+        current_position = find_start(start_regex, sequence, current_position, len(sequence))
+        if current_position:
+            stop = find_stop(stop_regex, sequence, current_position)
+            if stop:
+                if (stop-current_position+3) > min_gene_len:
+                    if has_shine_dalgarno(shine_regex, sequence, current_position, max_shine_dalgarno_distance):
+                        identified_genes.append([current_position+1, stop+2+1])
+                        current_position = stop + 2 + min_gap
+                    else:
+                        current_position += 1
+                else:
+                    current_position += 1
+            else:
+                current_position += 1
+    return identified_genes
 
 
 def write_genes_pos(predicted_genes_file: Path, probable_genes: List[List[int]]) -> None:
