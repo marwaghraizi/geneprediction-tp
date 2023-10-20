@@ -231,22 +231,26 @@ def main() -> None: # pragma: no cover
     # Call these function in the order that you want
     # We reverse and complement
     sequence = read_fasta(args.genome_file)
-    # Call to output functions
-    probable_genes = predict_genes(sequence, start_regex, stop_regex, shine_regex, min_gene_len, max_shine_dalgarno_distance, min_gap)
+    probable_genes = predict_genes(sequence, start_regex, stop_regex, shine_regex,
+                                   args.min_gene_len, args.max_shine_dalgarno_distance,
+                                   args.min_gap)
 
-    
-    # reverse case
+    # Don't forget to uncomment !!!
+    # Call these function in the order that you want
+    # We reverse and complement
     sequence_rc = reverse_complement(sequence)
-    probable_genes_comp = predict_genes(sequence_rc, start_regex, stop_regex, shine_regex, min_gene_len, max_shine_dalgarno_distance, min_gap)
-    #write_genes_pos(args.predicted_genes_file, probable_genes_comp)
-    #write_genes(args.fasta_file, sequence, probable_genes, sequence_rc, probable_genes_comp)
+    probable_genes_comp = predict_genes(sequence_rc, start_regex, stop_regex, shine_regex,
+                                        args.min_gene_len, args.max_shine_dalgarno_distance,
+                                        args.min_gap)
 
-    for gene in probable_genes_comp:
-        gene.reverse()
-        gene[0], gene[1] = len(sequence_rc) - gene[1] + 1, len(sequence_rc) - gene[0]+1
-        
-    write_genes_pos(args.predicted_genes_file, probable_genes)
+    probable_genes_comp = [[len(sequence_rc) - gene[1]+1, len(sequence_rc) - gene[0]+1] for gene in probable_genes_comp]
+
+    # Call to output functions
+    #write_genes_pos(args.predicted_genes_file, probable_genes.extend(probable_genes_comp))
     write_genes(args.fasta_file, sequence, probable_genes, sequence_rc, probable_genes_comp)
+    # print(probable_genes)
+    # print(probable_genes_comp)
+    write_genes_pos(args.predicted_genes_file, probable_genes + probable_genes_comp)
 
 if __name__ == '__main__':
     main()
