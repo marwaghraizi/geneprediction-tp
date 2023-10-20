@@ -60,7 +60,14 @@ def read_fasta(fasta_file: Path) -> str:
     :param fasta_file: (Path) Path to the fasta file.
     :return: (str) Sequence from the genome. 
     """
-    pass
+    with open(fasta_file, "r") as filin:
+        sequence = ""
+        for line in filin:
+            if not line.startswith(">"):
+                sequence += line.strip("\n").upper()
+        return sequence
+
+
 
 
 def find_start(start_regex: Pattern, sequence: str, start: int, stop: int) -> Union[int, None]:
@@ -72,7 +79,10 @@ def find_start(start_regex: Pattern, sequence: str, start: int, stop: int) -> Un
     :param stop: (int) Stop position of the research
     :return: (int) If exist, position of the start codon. Otherwise None. 
     """
-    pass
+    matches = start_regex.search(sequence, start, stop) 
+    if matches:
+        return matches.start(0)
+    return None
 
 
 def find_stop(stop_regex: Pattern, sequence: str, start: int) -> Union[int, None]:
@@ -83,7 +93,14 @@ def find_stop(stop_regex: Pattern, sequence: str, start: int) -> Union[int, None
     :param start: (int) Start position of the research
     :return: (int) If exist, position of the stop codon. Otherwise None. 
     """
-    pass
+    matches = stop_regex.finditer(sequence, start)
+    if matches:
+        for match in matches:
+            # checking if the match is in the reading frame
+            if (match.start(0)-start)%3 == 0:
+                return match.start(0)
+    return None
+    
 
 
 def has_shine_dalgarno(shine_regex: Pattern, sequence: str, start: int, max_shine_dalgarno_distance: int) -> bool:
